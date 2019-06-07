@@ -23,12 +23,6 @@ import com.facebook.presto.jdbc.ColumnInfo.Nullable;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.DateTimeFormatterBuilder;
-import org.joda.time.format.DateTimeParser;
-import org.joda.time.format.ISODateTimeFormat;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -51,11 +45,9 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -74,8 +66,9 @@ import static java.util.Objects.requireNonNull;
 public class PrestoResultSet
         implements ResultSet
 {
-    static final DateTimeFormatter DATE_FORMATTER = ISODateTimeFormat.date();
-    static final DateTimeFormatter TIME_FORMATTER = DateTimeFormat.forPattern("HH:mm:ss.SSS");
+    //Date time java 8
+    static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_DATE;
+    static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");//TODO: add locale parameter if needs be
     static final DateTimeFormatter TIME_WITH_TIME_ZONE_FORMATTER = new DateTimeFormatterBuilder()
             .append(DateTimeFormat.forPattern("HH:mm:ss.SSS ZZZ").getPrinter(),
                     new DateTimeParser[] {
@@ -85,7 +78,9 @@ public class PrestoResultSet
             .toFormatter()
             .withOffsetParsed();
 
-    static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS");
+
+
+    static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     static final DateTimeFormatter TIMESTAMP_WITH_TIME_ZONE_FORMATTER = new DateTimeFormatterBuilder()
             .append(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS ZZZ").getPrinter(),
                     new DateTimeParser[] {
@@ -96,7 +91,7 @@ public class PrestoResultSet
             .withOffsetParsed();
 
     private final StatementClient client;
-    private final DateTimeZone sessionTimeZone;
+    private final TimeZone sessionTimeZone;
     private final String queryId;
     private final Iterator<List<Object>> results;
     private final Map<String, Integer> fieldMap;
@@ -113,7 +108,7 @@ public class PrestoResultSet
         this.client = requireNonNull(client, "client is null");
         requireNonNull(progressCallback, "progressCallback is null");
 
-        this.sessionTimeZone = DateTimeZone.forID(client.getTimeZone().getId());
+        this.sessionTimeZone = TimeZone.getTimeZone(client.getTimeZone().getId());
         this.queryId = client.currentStatusInfo().getId();
 
         List<Column> columns = getColumns(client, progressCallback);
@@ -254,7 +249,7 @@ public class PrestoResultSet
         return getDate(columnIndex, sessionTimeZone);
     }
 
-    private Date getDate(int columnIndex, DateTimeZone localTimeZone)
+    private Date getDate(int columnIndex, TimeZone localTimeZone)
             throws SQLException
     {
         Object value = column(columnIndex);
@@ -263,7 +258,8 @@ public class PrestoResultSet
         }
 
         try {
-            return new Date(DATE_FORMATTER.withZone(localTimeZone).parseMillis(String.valueOf(value)));
+            return new Date(DATE_FORMATTER.withZone(localTimeZone.toZoneId()).parse(String.valueOf(value))
+                    .getLong(ChronoField.MILLI_OF_SECOND));
         }
         catch (IllegalArgumentException e) {
             throw new SQLException("Invalid date from server: " + value, e);
@@ -277,7 +273,7 @@ public class PrestoResultSet
         return getTime(columnIndex, sessionTimeZone);
     }
 
-    private Time getTime(int columnIndex, DateTimeZone localTimeZone)
+    private Time getTime(int columnIndex, TimeZone localTimeZone)
             throws SQLException
     {
         Object value = column(columnIndex);
@@ -288,7 +284,8 @@ public class PrestoResultSet
         ColumnInfo columnInfo = columnInfo(columnIndex);
         if (columnInfo.getColumnTypeName().equalsIgnoreCase("time")) {
             try {
-                return new Time(TIME_FORMATTER.withZone(localTimeZone).parseMillis(String.valueOf(value)));
+                return new Time(TIME_FORMATTER.withZone(localTimeZone.toZoneId()).parse(String.valueOf(value))
+                        .getLong(ChronoField.MILLI_OF_SECOND));
             }
             catch (IllegalArgumentException e) {
                 throw new SQLException("Invalid time from server: " + value, e);
@@ -314,7 +311,7 @@ public class PrestoResultSet
         return getTimestamp(columnIndex, sessionTimeZone);
     }
 
-    private Timestamp getTimestamp(int columnIndex, DateTimeZone localTimeZone)
+    private Timestamp getTimestamp(int columnIndex, TimeZone localTimeZone)
             throws SQLException
     {
         Object value = column(columnIndex);
@@ -325,7 +322,8 @@ public class PrestoResultSet
         ColumnInfo columnInfo = columnInfo(columnIndex);
         if (columnInfo.getColumnTypeName().equalsIgnoreCase("timestamp")) {
             try {
-                return new Timestamp(TIMESTAMP_FORMATTER.withZone(localTimeZone).parseMillis(String.valueOf(value)));
+                return new Timestamp(TIMESTAMP_FORMATTER.withZone(localTimeZone.toZoneId()).parse(String.valueOf(value))
+                        .getLong(ChronoField.MILLI_OF_SECOND));
             }
             catch (IllegalArgumentException e) {
                 throw new SQLException("Invalid timestamp from server: " + value, e);
