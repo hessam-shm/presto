@@ -45,6 +45,10 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
 import java.util.Calendar;
@@ -245,8 +249,8 @@ public class PrestoResultSet
         }
 
         try {
-            return new Date(DATE_FORMATTER.withZone(localTimeZone.toZoneId()).parse(String.valueOf(value))
-                    .getLong(ChronoField.EPOCH_DAY));
+            return new Date(LocalDate.from(DATE_FORMATTER.withZone(localTimeZone.toZoneId()).parse(String.valueOf(value)))
+                    .atStartOfDay().toInstant(ZoneOffset.of(ZoneId.systemDefault().getId())).toEpochMilli());
         }
         catch (IllegalArgumentException e) {
             throw new SQLException("Invalid date from server: " + value, e);
@@ -271,8 +275,8 @@ public class PrestoResultSet
         ColumnInfo columnInfo = columnInfo(columnIndex);
         if (columnInfo.getColumnTypeName().equalsIgnoreCase("time")) {
             try {
-                return new Time(TIME_FORMATTER.withZone(localTimeZone.toZoneId()).parse(String.valueOf(value))
-                        .getLong(ChronoField.MILLI_OF_SECOND));
+                return new Time(LocalDateTime.from(TIME_FORMATTER.parse(String.valueOf(value)))
+                        .toInstant(ZoneOffset.of(ZoneId.systemDefault().getId())).toEpochMilli());
             }
             catch (IllegalArgumentException e) {
                 throw new SQLException("Invalid time from server: " + value, e);
@@ -281,8 +285,8 @@ public class PrestoResultSet
 
         if (columnInfo.getColumnTypeName().equalsIgnoreCase("time with time zone")) {
             try {
-                return new Time(TIME_WITH_TIME_ZONE_FORMATTER.withZone(localTimeZone.toZoneId()).parse(String.valueOf(value))
-                        .getLong(ChronoField.MILLI_OF_SECOND));
+                return new Time(LocalDateTime.from(TIME_WITH_TIME_ZONE_FORMATTER.withZone(localTimeZone.toZoneId()).parse(String.valueOf(value)))
+                        .toInstant(ZoneOffset.of(ZoneId.systemDefault().getId())).toEpochMilli());
             }
             catch (IllegalArgumentException e) {
                 throw new SQLException("Invalid time from server: " + value, e);
