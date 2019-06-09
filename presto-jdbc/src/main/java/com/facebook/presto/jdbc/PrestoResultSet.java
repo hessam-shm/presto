@@ -246,7 +246,7 @@ public class PrestoResultSet
 
         try {
             return new Date(DATE_FORMATTER.withZone(localTimeZone.toZoneId()).parse(String.valueOf(value))
-                    .getLong(ChronoField.MILLI_OF_SECOND));
+                    .getLong(ChronoField.EPOCH_DAY));
         }
         catch (IllegalArgumentException e) {
             throw new SQLException("Invalid date from server: " + value, e);
@@ -281,7 +281,7 @@ public class PrestoResultSet
 
         if (columnInfo.getColumnTypeName().equalsIgnoreCase("time with time zone")) {
             try {
-                return new Time(TIME_WITH_TIME_ZONE_FORMATTER.parse(String.valueOf(value))
+                return new Time(TIME_WITH_TIME_ZONE_FORMATTER.withZone(localTimeZone.toZoneId()).parse(String.valueOf(value))
                         .getLong(ChronoField.MILLI_OF_SECOND));
             }
             catch (IllegalArgumentException e) {
