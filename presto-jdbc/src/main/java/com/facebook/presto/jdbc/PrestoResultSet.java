@@ -69,26 +69,10 @@ public class PrestoResultSet
     //Date time java 8
     static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_DATE;
     static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");//TODO: add locale parameter if needs be
-    static final DateTimeFormatter TIME_WITH_TIME_ZONE_FORMATTER = new DateTimeFormatterBuilder()
-            .append(DateTimeFormat.forPattern("HH:mm:ss.SSS ZZZ").getPrinter(),
-                    new DateTimeParser[] {
-                            DateTimeFormat.forPattern("HH:mm:ss.SSS Z").getParser(),
-                            DateTimeFormat.forPattern("HH:mm:ss.SSS ZZZ").getParser(),
-                    })
-            .toFormatter()
-            .withOffsetParsed();
-
-
+    static final DateTimeFormatter TIME_WITH_TIME_ZONE_FORMATTER = DateTimeFormatter.ofPattern("YYYY-MM-DD HH:mm:ss.SSS ZZZ");
 
     static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-    static final DateTimeFormatter TIMESTAMP_WITH_TIME_ZONE_FORMATTER = new DateTimeFormatterBuilder()
-            .append(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS ZZZ").getPrinter(),
-                    new DateTimeParser[] {
-                            DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS Z").getParser(),
-                            DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS ZZZ").getParser(),
-                    })
-            .toFormatter()
-            .withOffsetParsed();
+    static final DateTimeFormatter TIMESTAMP_WITH_TIME_ZONE_FORMATTER = DateTimeFormatter.ofPattern("YYYY-MM-DD HH:mm:ss.SSS ZZZ");
 
     private final StatementClient client;
     private final TimeZone sessionTimeZone;
@@ -294,7 +278,8 @@ public class PrestoResultSet
 
         if (columnInfo.getColumnTypeName().equalsIgnoreCase("time with time zone")) {
             try {
-                return new Time(TIME_WITH_TIME_ZONE_FORMATTER.parseMillis(String.valueOf(value)));
+                return new Time(TIME_WITH_TIME_ZONE_FORMATTER.parse(String.valueOf(value))
+                        .getLong(ChronoField.MILLI_OF_SECOND));
             }
             catch (IllegalArgumentException e) {
                 throw new SQLException("Invalid time from server: " + value, e);
@@ -332,7 +317,8 @@ public class PrestoResultSet
 
         if (columnInfo.getColumnTypeName().equalsIgnoreCase("timestamp with time zone")) {
             try {
-                return new Timestamp(TIMESTAMP_WITH_TIME_ZONE_FORMATTER.parseMillis(String.valueOf(value)));
+                return new Timestamp(TIMESTAMP_WITH_TIME_ZONE_FORMATTER.parse(String.valueOf(value))
+                        .getLong(ChronoField.MILLI_OF_SECOND));
             }
             catch (IllegalArgumentException e) {
                 throw new SQLException("Invalid timestamp from server: " + value, e);
