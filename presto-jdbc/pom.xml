@@ -53,10 +53,10 @@
             </exclusions>
         </dependency>
 
-        <!--<dependency>
+        <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-        </dependency>-->
+        </dependency>
 
         <dependency>
             <groupId>com.google.guava</groupId>

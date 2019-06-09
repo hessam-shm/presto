@@ -47,7 +47,12 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
-import java.util.*;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -68,12 +73,10 @@ public class PrestoResultSet
 {
     //Date time java 8
     static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_DATE;
-    static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");//TODO: add locale parameter if needs be
+    static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
     static final DateTimeFormatter TIME_WITH_TIME_ZONE_FORMATTER = DateTimeFormatter.ofPattern("YYYY-MM-DD HH:mm:ss.SSS ZZZ");
-
     static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     static final DateTimeFormatter TIMESTAMP_WITH_TIME_ZONE_FORMATTER = DateTimeFormatter.ofPattern("YYYY-MM-DD HH:mm:ss.SSS ZZZ");
-
     private final StatementClient client;
     private final TimeZone sessionTimeZone;
     private final String queryId;
@@ -1153,7 +1156,7 @@ public class PrestoResultSet
     public Date getDate(int columnIndex, Calendar cal)
             throws SQLException
     {
-        return getDate(columnIndex, DateTimeZone.forTimeZone(cal.getTimeZone()));
+        return getDate(columnIndex, TimeZone.getTimeZone(cal.getTimeZone().getID()));
     }
 
     @Override
@@ -1167,7 +1170,7 @@ public class PrestoResultSet
     public Time getTime(int columnIndex, Calendar cal)
             throws SQLException
     {
-        return getTime(columnIndex, DateTimeZone.forTimeZone(cal.getTimeZone()));
+        return getTime(columnIndex, TimeZone.getTimeZone(cal.getTimeZone().getID()));
     }
 
     @Override
@@ -1181,7 +1184,7 @@ public class PrestoResultSet
     public Timestamp getTimestamp(int columnIndex, Calendar cal)
             throws SQLException
     {
-        return getTimestamp(columnIndex, DateTimeZone.forTimeZone(cal.getTimeZone()));
+        return getTimestamp(columnIndex, TimeZone.getTimeZone(cal.getTimeZone().getID()));
     }
 
     @Override
