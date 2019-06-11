@@ -250,7 +250,7 @@ public class PrestoResultSet
 
         try {
             return new Date(LocalDate.from(DATE_FORMATTER.withZone(localTimeZone.toZoneId()).parse(String.valueOf(value)))
-                    .atStartOfDay().toInstant(ZoneOffset.of(ZoneId.systemDefault().getId())).toEpochMilli());
+                    .atStartOfDay().toInstant(ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now())).toEpochMilli());
         }
         catch (IllegalArgumentException e) {
             throw new SQLException("Invalid date from server: " + value, e);
@@ -276,7 +276,7 @@ public class PrestoResultSet
         if (columnInfo.getColumnTypeName().equalsIgnoreCase("time")) {
             try {
                 return new Time(LocalDateTime.from(TIME_FORMATTER.parse(String.valueOf(value)))
-                        .toInstant(ZoneOffset.of(ZoneId.systemDefault().getId())).toEpochMilli());
+                        .toInstant(ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now())).toEpochMilli());
             }
             catch (IllegalArgumentException e) {
                 throw new SQLException("Invalid time from server: " + value, e);
@@ -286,7 +286,7 @@ public class PrestoResultSet
         if (columnInfo.getColumnTypeName().equalsIgnoreCase("time with time zone")) {
             try {
                 return new Time(LocalDateTime.from(TIME_WITH_TIME_ZONE_FORMATTER.withZone(localTimeZone.toZoneId()).parse(String.valueOf(value)))
-                        .toInstant(ZoneOffset.of(ZoneId.systemDefault().getId())).toEpochMilli());
+                        .toInstant(ZoneId.systemDefault().getRules().getOffset(LocalDateTime.now())).toEpochMilli());
             }
             catch (IllegalArgumentException e) {
                 throw new SQLException("Invalid time from server: " + value, e);
