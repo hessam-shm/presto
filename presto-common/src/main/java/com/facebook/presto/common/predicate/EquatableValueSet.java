@@ -231,6 +231,10 @@ public class EquatableValueSet
         }
     }
 
+    public int getValuesCount(){
+        return entries.size();
+    }
+
     @Override
     public EquatableValueSet complement()
     {

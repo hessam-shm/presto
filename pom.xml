@@ -113,6 +113,7 @@
         <module>presto-base-jdbc</module>
         <module>presto-testing-docker</module>
         <module>presto-mysql</module>
+        <module>presto-memsql</module>
         <module>presto-oracle</module>
         <module>presto-postgresql</module>
         <module>presto-redshift</module>

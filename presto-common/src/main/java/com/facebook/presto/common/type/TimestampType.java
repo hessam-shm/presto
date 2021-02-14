@@ -17,6 +17,7 @@ import com.facebook.presto.common.block.Block;
 import com.facebook.presto.common.function.SqlFunctionProperties;
 
 import static com.facebook.presto.common.type.TypeSignature.parseTypeSignature;
+import static java.lang.String.format;
 
 //
 // A timestamp is stored as milliseconds from 1970-01-01T00:00:00 UTC.  When performing calculations
@@ -25,11 +26,27 @@ import static com.facebook.presto.common.type.TypeSignature.parseTypeSignature;
 public final class TimestampType
         extends AbstractLongType
 {
+    public static final int MAX_PRECISION = 12;
+
+    public static final int MAX_SHORT_PRECISION = 6;
+    public static final int DEFAULT_PRECISION = 3; // TODO: should be 6 per SQL spec
+
+    private static final TimestampType[] TYPES = new TimestampType[MAX_PRECISION + 1];
+
     public static final TimestampType TIMESTAMP = new TimestampType();
+    public static final TimestampType TIMESTAMP_SECONDS = createTimestampType(0);
+    public static final TimestampType TIMESTAMP_MILLIS = createTimestampType(3);
+    public static final TimestampType TIMESTAMP_MICROS = createTimestampType(6);
+    public static final TimestampType TIMESTAMP_NANOS = createTimestampType(9);
+    public static final TimestampType TIMESTAMP_PICOS = createTimestampType(12);
 
     private TimestampType()
     {
         super(parseTypeSignature(StandardTypes.TIMESTAMP));
+    }
+
+    public static TimestampType createTimestampType(int precision) {
+        return TYPES[precision];
     }
 
     @Override
