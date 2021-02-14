@@ -238,7 +238,7 @@ public class PrestoPreparedStatement
             setNull(parameterIndex, Types.DATE);
         }
         else {
-            setParameter(parameterIndex, formatLiteral("DATE", DATE_FORMATTER.print(x.getTime())));
+            setParameter(parameterIndex, formatLiteral("DATE", DATE_FORMATTER.format(x.toInstant())));
         }
     }
 
@@ -251,7 +251,7 @@ public class PrestoPreparedStatement
             setNull(parameterIndex, Types.TIME);
         }
         else {
-            setParameter(parameterIndex, formatLiteral("TIME", TIME_FORMATTER.print(x.getTime())));
+            setParameter(parameterIndex, formatLiteral("TIME", TIME_FORMATTER.format(x.toInstant())));
         }
     }
 
@@ -264,7 +264,7 @@ public class PrestoPreparedStatement
             setNull(parameterIndex, Types.TIMESTAMP);
         }
         else {
-            setParameter(parameterIndex, formatLiteral("TIMESTAMP", TIMESTAMP_FORMATTER.print(x.getTime())));
+            setParameter(parameterIndex, formatLiteral("TIMESTAMP", TIMESTAMP_FORMATTER.format(x.toInstant())));
         }
     }
 
